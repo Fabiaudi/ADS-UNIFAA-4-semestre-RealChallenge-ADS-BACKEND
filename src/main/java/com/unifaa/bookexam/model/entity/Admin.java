@@ -1,4 +1,4 @@
-package com.unifaa.bookexam.domain.users;
+package com.unifaa.bookexam.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

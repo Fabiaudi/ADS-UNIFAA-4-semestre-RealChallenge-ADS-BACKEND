@@ -1,6 +1,6 @@
 package com.unifaa.bookexam.service;
 
-import com.unifaa.bookexam.domain.users.User;
+import com.unifaa.bookexam.model.entity.User;
 import com.unifaa.bookexam.repository.UserRepository;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;

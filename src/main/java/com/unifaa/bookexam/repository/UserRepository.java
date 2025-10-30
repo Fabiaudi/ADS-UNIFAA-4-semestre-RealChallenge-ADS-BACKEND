@@ -1,8 +1,8 @@
 package com.unifaa.bookexam.repository;
 
-import com.unifaa.bookexam.domain.users.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.unifaa.bookexam.model.entity.User;
 
 import java.util.Optional;
 
