@@ -17,18 +17,37 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
+/**
+ * Configuração central de segurança do Spring Security.
+ * Define o {@link SecurityFilterChain}, {@link PasswordEncoder}, {@link AuthenticationManager}
+ * e a configuração de CORS.
+ */
 @Configuration
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
+    /**
+     * Construtor para injeção de dependências do serviço de usuário e do utilitário JWT.
+     *
+     * @param uds Serviço customizado de detalhes do usuário.
+     * @param jwtUtil Utilitário para manipulação de tokens JWT.
+     */
     public SecurityConfig(CustomUserDetailsService uds, JwtUtil jwtUtil) {
         this.userDetailsService = uds;
         this.jwtUtil = jwtUtil;
     }
 
-    // Configura filtros e regras de segurança
+    /**
+     * Configura a cadeia de filtros de segurança (SecurityFilterChain).
+     * Define quais rotas são públicas ou privadas, desabilita CSRF,
+     * define a política de sessão como STATELESS e adiciona o filtro JWT.
+     *
+     * @param http O construtor HttpSecurity.
+     * @return O SecurityFilterChain construído.
+     * @throws Exception Se ocorrer um erro durante a configuração.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // Permite /api/auth/** sem autenticação
@@ -45,6 +64,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+	/**
+     * Define a configuração de CORS (Cross-Origin Resource Sharing) da aplicação.
+     * Permite requisições de qualquer origem, método e header (configuração liberal para desenvolvimento).
+     *
+     * @return A fonte de configuração de CORS.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -56,7 +81,15 @@ public class SecurityConfig {
         return source;
     }
 
-    // Configura autenticação e encoder de senha
+    /**
+     * Expõe o AuthenticationManager como um Bean.
+     * Configura o provedor de autenticação para usar o {@link CustomUserDetailsService}
+     * e o {@link PasswordEncoder}.
+     *
+     * @param http O construtor HttpSecurity.
+     * @return O AuthenticationManager.
+     * @throws Exception Se ocorrer um erro na construção.
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder amb = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -64,6 +97,11 @@ public class SecurityConfig {
         return amb.build();
     }
 
+	/**
+     * Define o encoder de senhas (BCrypt) como um Bean.
+     *
+     * @return Uma instância de BCryptPasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
