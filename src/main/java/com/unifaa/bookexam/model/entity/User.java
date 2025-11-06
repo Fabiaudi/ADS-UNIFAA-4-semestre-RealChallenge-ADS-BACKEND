@@ -1,58 +1,49 @@
 package com.unifaa.bookexam.model.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
- * Entidade JPA abstrata base para todos os usuários (Admin, Student, Polo).
- * Utiliza estratégia de herança SINGLE_TABLE com uma coluna discriminadora "type".
+ * Entidade base de usuário (SINGLE_TABLE).
+ * Coluna discriminadora 'type' armazena ADMIN | POLO | STUDENT.
  */
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public abstract class User {
 
-	/**
-     * ID do usuário (Matrícula). Ex: A00001, P00001, E00001.
-     */
+    /** Matrícula: A00001, P00001, E00001 */
     @Id
-    private String id;  
-	
-	/**
-     * Nome completo do usuário.
-     */	
+    private String id;
+
     private String name;
-	
-	/**
-     * Email único do usuário (usado para login).
-     */
+
+    @Column(nullable = false, unique = true)
     private String email;
 
-	/**
-     * Hash da senha (armazenado no formato BCrypt).
-     */
-    @Column(name = "password_hash")
+    /** hash BCrypt vindo da coluna password_hash */
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-	/**
-     * Timestamp de criação do usuário (gerenciado pelo banco).
-     */
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /**
-     * Tipo do usuário (Coluna Discriminadora).
-     * Ex: ADMIN, STUDENT, POLO.
-     * (Definido como insertable=false, updatable=false pois é gerenciado pelo JPA
-     * via @DiscriminatorValue).
-     */
+    /** Coluna discriminadora — gerenciada pelo JPA */
     @Column(name = "type", insertable = false, updatable = false)
     private String type;
 }

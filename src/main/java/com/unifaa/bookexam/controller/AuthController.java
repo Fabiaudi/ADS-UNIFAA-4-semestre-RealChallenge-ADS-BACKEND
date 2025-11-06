@@ -1,68 +1,55 @@
 package com.unifaa.bookexam.controller;
 
-import com.unifaa.bookexam.model.dto.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.unifaa.bookexam.model.dto.AuthResponse;
+import com.unifaa.bookexam.model.dto.LoginRequest;
 import com.unifaa.bookexam.repository.UserRepository;
 import com.unifaa.bookexam.util.JwtUtil;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
-import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST para lidar com endpoints de autenticação.
- * Expõe a rota /api/auth/login.
+ * Endpoint de autenticação (login) — fluxo simplificado:
+ *  - Busca usuário por email
+ *  - Valida senha via PasswordEncoder.matches(raw, hash)
+ *  - Gera JWT com claim 'role'
+ *
+ * Quando a Laís finalizar o UserDetailsService/AuthenticationProvider,
+ * podemos voltar a usar AuthenticationManager.authenticate(...).
  */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-	/**
-     * Construtor para injeção de dependências do AuthenticationManager,
-     * UserRepository e JwtUtil.
-     *
-     * @param am O AuthenticationManager do Spring Security.
-     * @param ur O repositório de usuários.
-     * @param ju O utilitário JWT.
-     */
-    public AuthController(AuthenticationManager am, UserRepository ur, JwtUtil ju) {
-        this.authenticationManager = am;
-        this.userRepository = ur;
-        this.jwtUtil = ju;
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Endpoint para login (autenticação) de usuários.
-     * Recebe credenciais (email e senha) e, se válidas, retorna um
-     * {@link AuthResponse} contendo o token JWT e dados básicos do usuário.
-     *
-     * @param req O DTO {@link LoginRequest} contendo email e senha.
-     * @return Um ResponseEntity 200 (OK) com o AuthResponse se o login for bem-sucedido,
-     * ou 401 (Unauthorized) se as credenciais forem inválidas.
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+        System.out.printf("[AUTH] Tentativa de login email=%s%n", req.getEmail());
 
-        System.out.println("Tentativa de login para Email: [" + req.getEmail() + "], Senha: [" + req.getPassword() + "]");
-        
-        // Tenta autenticar usando o AuthenticationManager
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
-            );
-        } catch (BadCredentialsException ex) {
+        var userOpt = userRepository.findByEmail(req.getEmail());
+        if (userOpt.isEmpty()) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
 
-		// Se autenticado, busca o usuário no banco para obter dados
-        var user = userRepository.findByEmail(req.getEmail()).orElseThrow();
-		
-		// Gera o token JWT
+        var user = userOpt.get();
+        if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
+
         String token = jwtUtil.generateToken(user.getEmail(), user.getType());
-		
-		// Prepara a resposta
         var resp = new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getType());
         return ResponseEntity.ok(resp);
     }
