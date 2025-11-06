@@ -44,6 +44,9 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+
+        System.out.println("Tentativa de login para Email: [" + req.getEmail() + "], Senha: [" + req.getPassword() + "]");
+        
         // Tenta autenticar usando o AuthenticationManager
         try {
             authenticationManager.authenticate(
