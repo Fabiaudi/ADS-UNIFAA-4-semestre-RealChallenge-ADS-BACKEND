@@ -39,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 				
 		// Define o 'type' (role)
-        String role = u.getType() != null ? u.getType() : "ADMIN";
+        String role = u.getType() != null ? u.getType() : "STUDENT";
 		
 		// Constrói o UserDetails do Spring Security
         return org.springframework.security.core.userdetails.User
