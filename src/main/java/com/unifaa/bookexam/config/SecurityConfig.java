@@ -17,11 +17,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
 /**
  * Configuração central de segurança do Spring Security.
  * Define o {@link SecurityFilterChain}, {@link PasswordEncoder}, {@link AuthenticationManager}
  * e a configuração de CORS.
  */
+@SuppressWarnings("unused")
 @Configuration
 public class SecurityConfig {
 
@@ -90,11 +94,42 @@ public class SecurityConfig {
      * @return O AuthenticationManager.
      * @throws Exception Se ocorrer um erro na construção.
      */
+    /*
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder amb = http.getSharedObject(AuthenticationManagerBuilder.class);
         amb.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return amb.build();
+    }
+    */
+
+    /**
+     * Define o provedor de autenticação (DAO).
+     * É aqui que vinculamos o nosso CustomUserDetailsService e o PasswordEncoder.
+     * O Spring (ProviderManager) usará este provider automaticamente.
+     *
+     * @return O DaoAuthenticationProvider configurado.
+     */
+    @SuppressWarnings("deprecation")
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService); // Nosso serviço de usuário
+        authProvider.setPasswordEncoder(passwordEncoder()); // Nosso encoder BCrypt
+        return authProvider;
+    }
+
+    /**
+     * Expõe o AuthenticationManager global como um Bean.
+     * Este é o bean que será injetado no AuthController.
+     *
+     * @param config A configuração de autenticação do Spring.
+     * @return O AuthenticationManager.
+     * @throws Exception Se ocorrer um erro.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 	/**
