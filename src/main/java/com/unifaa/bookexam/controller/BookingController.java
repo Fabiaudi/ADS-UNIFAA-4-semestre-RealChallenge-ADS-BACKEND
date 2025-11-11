@@ -96,7 +96,7 @@ public class BookingController {
         @GetMapping("/availability") //fica
         public ResponseEntity<List<AvailabilitySlotDTO>> getAvailability(
                 @RequestParam UUID subject,
-                @RequestParam UUID poloId,
+                @RequestParam String poloId,
                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
             // Busca o Subject pelo ID
@@ -115,7 +115,7 @@ public class BookingController {
         @GetMapping("/debug-schedule")
         public ResponseEntity<?> debugSchedule(
         @RequestParam UUID subjectId,
-        @RequestParam UUID poloId,
+        @RequestParam String poloId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
     
     Subject subject = subjectService.findById(subjectId)

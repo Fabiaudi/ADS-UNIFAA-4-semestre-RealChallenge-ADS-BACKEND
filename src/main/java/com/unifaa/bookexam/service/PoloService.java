@@ -9,7 +9,6 @@ import com.unifaa.bookexam.repository.PoloRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class PoloService {
      * @return Polo ou null se não existir
      */
     @Transactional(readOnly = true)
-    public Polo getPoloById(UUID poloId) {
+    public Polo getPoloById(String poloId) {
         return poloRepository.findById(poloId).orElse(null);
     }
 
@@ -35,19 +34,19 @@ public class PoloService {
      * @return capacidade (availability) ou 0 se o polo não existir
      */
     @Transactional(readOnly = true)
-    public int getAvailability(UUID poloId) {
+    public int getAvailability(String poloId) {
         Optional<Polo> poloOpt = poloRepository.findById(poloId);
         return poloOpt.map(Polo::getAvailability).orElse(0);
     }
 
     @Transactional(readOnly = true)
-    public int getCapacity(UUID poloId) {
+    public int getCapacity(String poloId) {
         Optional<Polo> poloOpt = poloRepository.findById(poloId);
         return poloOpt.map(Polo::getAvailability).orElse(0);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Polo> findById(UUID poloId) {
+    public Optional<Polo> findById(String poloId) {
         return poloRepository.findById(poloId);
     }
 }

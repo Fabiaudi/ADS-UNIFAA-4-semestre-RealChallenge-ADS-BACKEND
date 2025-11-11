@@ -32,7 +32,7 @@ public class AvailabilityService {
  /**
      * Monta lista de AvailabilitySlotDTO para um subject+polo+date.
      */
-    public List<AvailabilitySlotDTO> getAvailability(Subject subject, UUID poloId, LocalDate date) {
+    public List<AvailabilitySlotDTO> getAvailability(Subject subject, String poloId, LocalDate date) {
 
             System.out.println("=== DEBUG AVAILABILITY ===");
             System.out.println("Subject: " + subject.getId() + " - " + subject.getName());
@@ -61,7 +61,7 @@ public class AvailabilityService {
         int capacity = poloService.getCapacity(poloId);
          System.out.println("Capacidade do polo: " + capacity);
 
-        Optional<Polo> polo = poloRepository.findById(); // ← Busca o objeto Polo
+        Polo polo = poloRepository.findById(poloId)
         .orElseThrow(() -> new IllegalArgumentException("Polo não encontrado"));
 
         // 5 Monta os DTOs com disponibilidade real

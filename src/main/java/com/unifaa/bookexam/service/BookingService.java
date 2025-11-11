@@ -44,7 +44,7 @@ public class BookingService {
 
         // 1. Converte os IDs
         LocalDate date = dto.getDate();
-        UUID poloUuid = UUID.fromString(dto.getPoloId());
+        String poloId = dto.getPoloId();
         UUID subjectUuid = UUID.fromString(dto.getSubjectId());
 
         // 2. Buscar a entidade Subject completa
@@ -52,11 +52,11 @@ public class BookingService {
         .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
 
         // 3. Buscar Polo completo
-        Polo polo = poloService.findById(poloUuid)
+        Polo polo = poloService.findById(poloId)
             .orElseThrow(() -> new IllegalArgumentException("Polo não encontrado."));
 
         // 4. Buscar schedule
-        var schedule = scheduleService.findScheduleForSubjectAndPoloOnDate(poloUuid, subjectUuid, dto.getDate())
+        var schedule = scheduleService.findScheduleForSubjectAndPoloOnDate(poloId, subjectUuid, dto.getDate())
             .orElseThrow(() -> new IllegalArgumentException("Nenhum schedule encontrado para essa disciplina/polo na data informada."));
         UUID scheduleId = schedule.getId();
 
@@ -84,7 +84,7 @@ public class BookingService {
         }
 
         // 7. Verifica capacidade
-        int capacity = poloService.getCapacity(poloUuid);
+        int capacity = poloService.getCapacity(poloId);
 
         long booked = bookingRepository.countByPolo_IdAndSubjectAndDateAndTime(
                 polo,

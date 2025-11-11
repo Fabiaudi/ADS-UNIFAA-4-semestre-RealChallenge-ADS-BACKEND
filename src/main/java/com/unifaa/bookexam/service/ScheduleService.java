@@ -278,7 +278,7 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Schedule> findScheduleForSubjectAndPoloOnDate(UUID poloId, UUID subjectId, LocalDate date) {
+    public Optional<Schedule> findScheduleForSubjectAndPoloOnDate(String poloId, UUID subjectId, LocalDate date) {
         return scheduleRepository.findByPoloIdAndSubjectIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 poloId.toString(), subjectId, date, date).stream().findFirst();
     }
