@@ -13,13 +13,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "booking")
+@Table(name = "bookings")
 @Getter
 @Setter
 public class Booking {
@@ -27,16 +29,18 @@ public class Booking {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID bookingId;
+    private UUID id;
 
-    @Column(name = "polo_id", nullable = false)
-    private String poloId;
+    @ManyToOne
+    @JoinColumn(name = "polo_id", nullable = false)
+    private Polo polo;
 
     @Column(name = "student_id") // (nullable = false)
     private String studentId;
 
-    @Column(name = "subject_id", nullable = false)
-    private UUID subjectId;
+    @ManyToOne
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDate createdAt;

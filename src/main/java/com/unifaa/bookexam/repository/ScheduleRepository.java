@@ -2,6 +2,7 @@ package com.unifaa.bookexam.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -51,4 +52,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
           ORDER BY s.startDate ASC, s.endDate ASC
       """)
   List<Schedule> findByFilters(String poloId, UUID subjectId, LocalDate from, LocalDate to);
+
+  Optional<Schedule> findByPoloIdAndSubjectIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+    String poloId, UUID subjectId, LocalDate startDate, LocalDate endDate);
 }
