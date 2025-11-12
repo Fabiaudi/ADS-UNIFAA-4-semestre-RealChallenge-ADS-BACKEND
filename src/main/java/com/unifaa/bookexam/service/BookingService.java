@@ -115,7 +115,10 @@ public class BookingService {
     }
 
     @Transactional
-    public void cancelBooking(String requesterId, boolean requesterIsAdminOrPolo, String bookingId) {
+    public void deleteBooking(String requesterId, boolean requesterIsAdminOrPolo, String bookingId) {
+        System.out.println("UserId: " + requesterId);
+        System.out.println("isAdminOrPolo: " + requesterIsAdminOrPolo);
+
         UUID bookingUuid = UUID.fromString(bookingId);
 
         Booking booking = bookingRepository.findById(bookingUuid)
