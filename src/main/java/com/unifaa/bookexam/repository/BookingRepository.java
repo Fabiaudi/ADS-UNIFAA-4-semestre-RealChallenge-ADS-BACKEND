@@ -18,14 +18,14 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>{
 
     List<Booking> findByStudentId(String studentId);
          
-    long countByPolo_IdAndSubjectAndDateAndTime(
+    long countByPoloAndSubjectAndDateAndTime(
         Polo polo,
         Subject subject,
         LocalDate date,
         LocalTime time
     );
 
-    Optional<Booking> findByStudentIdAndSubjectIdAndPolo_IdAndDateAndTime(
+    Optional<Booking> findByStudentIdAndSubjectAndPoloAndDateAndTime(
         String studentId,
         Subject subject,
         Polo polo,

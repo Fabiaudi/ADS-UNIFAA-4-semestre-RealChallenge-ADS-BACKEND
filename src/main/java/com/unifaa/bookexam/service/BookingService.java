@@ -76,7 +76,7 @@ public class BookingService {
         }
 
         // 6. Verifica a reserva única por aluno
-        Optional<Booking> existing = bookingRepository.findByStudentIdAndSubjectIdAndPolo_IdAndDateAndTime(studentId, subject, polo, dto.getDate(), dto.getTime());
+        Optional<Booking> existing = bookingRepository.findByStudentIdAndSubjectAndPoloAndDateAndTime(studentId, subject, polo, dto.getDate(), dto.getTime());
        
 
         if (existing.isPresent()) {
@@ -86,7 +86,7 @@ public class BookingService {
         // 7. Verifica capacidade
         int capacity = poloService.getCapacity(poloId);
 
-        long booked = bookingRepository.countByPolo_IdAndSubjectAndDateAndTime(
+        long booked = bookingRepository.countByPoloAndSubjectAndDateAndTime(
                 polo,
                 subject,
                 dto.getDate(),
@@ -104,6 +104,7 @@ public class BookingService {
         booking.setPolo(polo);
         booking.setDate(dto.getDate());
         booking.setTime(dto.getTime());
+        booking.setCreatedAt(LocalDate.now());
         booking.setStatus(BookingStatus.CONFIRMED);
 
         try {
@@ -133,7 +134,4 @@ public class BookingService {
     public List<Booking> getAllBookingsPolo(UUID poloId) {
        return bookingRepository.findAllByPolo_Id(poloId.toString());
     }
-
-    // scheduleService
-    // preciso de outras classes para implementar esse
 }

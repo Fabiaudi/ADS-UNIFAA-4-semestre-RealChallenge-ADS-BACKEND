@@ -69,7 +69,7 @@ public class AvailabilityService {
         for (TimeSlot ts : timeSlots) {
             LocalTime slotStart = ts.getTimeInterval().getStartTime();
             
-            long booked = bookingRepository.countByPolo_IdAndSubjectAndDateAndTime(
+            long booked = bookingRepository.countByPoloAndSubjectAndDateAndTime(
                 polo,
                 subject,
                 date,
