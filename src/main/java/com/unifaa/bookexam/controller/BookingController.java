@@ -3,7 +3,6 @@ package com.unifaa.bookexam.controller;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -67,35 +66,38 @@ public class BookingController {
 
 
     @GetMapping("/mine")
-    public ResponseEntity<List<BookingResponseDTO>> getMineBooking(@RequestParam String studentId) {
+    //@PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@RequestParam String studentId) {
+        
+        //String studentId = authentication.getName();
+
         var bookings = service.getMyBookings(studentId);
-        var dtos = bookings.stream()
-                           .map(mapper::toDTO)
-                           .collect(Collectors.toList());
+        var dtos = bookings.stream().map(mapper::toDTO).toList();
+        
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/all-bookings-polo")
-    public ResponseEntity<List<BookingResponseDTO>> getAllBookingsPolo(@RequestParam String poloId) {
-        UUID poloUuid;
-        try {
-            poloUuid = UUID.fromString(poloId); // converte para UUID
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build(); // caso o parâmetro seja inválido
-        }
+    // @GetMapping("/all-bookings-polo")
+    // public ResponseEntity<List<BookingResponseDTO>> getAllBookingsPolo(@RequestParam String poloId) {
+    //     UUID poloUuid;
+    //     try {
+    //         poloUuid = UUID.fromString(poloId); // converte para UUID
+    //     } catch (IllegalArgumentException e) {
+    //         return ResponseEntity.badRequest().build(); // caso o parâmetro seja inválido
+    //     }
 
-        List<Booking> bookings = service.getAllBookingsPolo(poloUuid);
+    //     List<Booking> bookings = service.getAllBookingsPolo(poloUuid);
 
-            if (bookings.isEmpty()) {
-                return ResponseEntity.noContent().build(); // retorna 204 se não tiver reservas
-            }
+    //         if (bookings.isEmpty()) {
+    //             return ResponseEntity.noContent().build(); // retorna 204 se não tiver reservas
+    //         }
 
-            List<BookingResponseDTO> dtos = bookings.stream()
-                .map(mapper::toDTO)
-                .collect(Collectors.toList());
+    //         List<BookingResponseDTO> dtos = bookings.stream()
+    //             .map(mapper::toDTO)
+    //             .collect(Collectors.toList());
 
-            return ResponseEntity.ok(dtos);
-        }
+    //         return ResponseEntity.ok(dtos);
+    //     }
 
         @GetMapping("/availability")
         public ResponseEntity<List<AvailabilitySlotDTO>> getAvailability(

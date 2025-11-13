@@ -10,7 +10,6 @@ import com.unifaa.bookexam.model.entity.Booking;
 @Mapper(componentModel = "spring")
 public interface BookingsMappers {
 
-    @Mapping(source = "studentId", target = "studentId")
     @Mapping(source = "subjectId", target = "subject.id") 
     @Mapping(source = "poloId", target = "polo.id") // popula booking.polo.id
     @Mapping(source = "date", target = "date")
@@ -19,7 +18,6 @@ public interface BookingsMappers {
 
     @Mapping(source = "polo.id", target = "poloId")
     @Mapping(source = "subject.id", target = "subjectId")
-    @Mapping(source = "studentId", target = "studentId")
     @Mapping(source = "date", target = "date")
     @Mapping(source = "time", target = "time")
     BookingRequestDTO requestToDTO(Booking booking);
