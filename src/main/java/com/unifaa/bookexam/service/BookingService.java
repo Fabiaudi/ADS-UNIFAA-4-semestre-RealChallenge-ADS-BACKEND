@@ -29,10 +29,6 @@ public class BookingService {
     private final PoloService poloService;
     private final TimeSlotService timeSlotService;
     private final SubjectQueryRepository subjectRepository;
-    
-    public Booking reservar(Booking booking) {
-        return bookingRepository.save(booking);
-    }
 
     @Transactional
     public List<Booking> getMyBookings(String studentId) {
@@ -116,25 +112,29 @@ public class BookingService {
 
     @Transactional
     public void deleteBooking(String requesterId, boolean requesterIsAdminOrPolo, String bookingId) {
-        System.out.println("UserId: " + requesterId);
-        System.out.println("isAdminOrPolo: " + requesterIsAdminOrPolo);
 
         UUID bookingUuid = UUID.fromString(bookingId);
 
         Booking booking = bookingRepository.findById(bookingUuid)
             .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
 
-        // apenas o admin/polo pode cancelar
+        //apenas o admin/polo pode cancelar
         if (!requesterIsAdminOrPolo && !booking.getStudentId().equals(requesterId)) {
             throw new SecurityException("Usuário não autorizado a cancelar esse booking.");
         }
 
+        // // Regra 1: Polo não pode cancelar
+        // if (isPolo) {
+        //     throw new SecurityException("Polo não tem permissão para cancelar reservas.");
+        // }
+
+        // // Regra 2: Estudante só pode cancelar sua própria reserva
+        // if (!isAdmin && !booking.getStudentId().equals(requesterId)) {
+        //     throw new SecurityException("Usuário não autorizado a cancelar essa reserva.");
+        // }
+
+        // Regra 3: Admin pode cancelar qualquer reserva
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Booking> getAllBookingsPolo(UUID poloId) {
-       return bookingRepository.findAllByPolo_Id(poloId.toString());
     }
 }

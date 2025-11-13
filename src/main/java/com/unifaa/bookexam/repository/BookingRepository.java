@@ -32,6 +32,4 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>{
         LocalDate date,
         LocalTime time
     );
-
-    List<Booking> findAllByPolo_Id(String poloId);
 }

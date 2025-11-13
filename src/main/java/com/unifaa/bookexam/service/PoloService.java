@@ -16,29 +16,6 @@ public class PoloService {
 
     private final PoloRepository poloRepository;
 
-    /**
-     * Retorna o polo pelo ID
-     *
-     * @param poloId - matrícula do polo (ex: "P00001")
-     * @return Polo ou null se não existir
-     */
-    @Transactional(readOnly = true)
-    public Polo getPoloById(String poloId) {
-        return poloRepository.findById(poloId).orElse(null);
-    }
-
-    /**
-     * Retorna a capacidade disponível do polo
-     *
-     * @param poloId - matrícula do polo
-     * @return capacidade (availability) ou 0 se o polo não existir
-     */
-    @Transactional(readOnly = true)
-    public int getAvailability(String poloId) {
-        Optional<Polo> poloOpt = poloRepository.findById(poloId);
-        return poloOpt.map(Polo::getAvailability).orElse(0);
-    }
-
     @Transactional(readOnly = true)
     public int getCapacity(String poloId) {
         Optional<Polo> poloOpt = poloRepository.findById(poloId);

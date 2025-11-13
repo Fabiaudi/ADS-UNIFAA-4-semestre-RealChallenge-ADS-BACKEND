@@ -51,6 +51,7 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
+    //@PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_ADMIN'")
     public ResponseEntity<Void> deleteBooking(
             @PathVariable("id") String id,
             Authentication authentication) {
@@ -66,7 +67,7 @@ public class BookingController {
 
 
     @GetMapping("/mine")
-    //@PreAuthorize("hasRole('STUDENT')")
+    //@PreAuthorize("hasRole('ROLE_STUDENT')")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@RequestParam String studentId) {
         
         //String studentId = authentication.getName();
@@ -77,44 +78,21 @@ public class BookingController {
         return ResponseEntity.ok(dtos);
     }
 
-    // @GetMapping("/all-bookings-polo")
-    // public ResponseEntity<List<BookingResponseDTO>> getAllBookingsPolo(@RequestParam String poloId) {
-    //     UUID poloUuid;
-    //     try {
-    //         poloUuid = UUID.fromString(poloId); // converte para UUID
-    //     } catch (IllegalArgumentException e) {
-    //         return ResponseEntity.badRequest().build(); // caso o parâmetro seja inválido
-    //     }
+    @GetMapping("/availability")
+    public ResponseEntity<List<AvailabilitySlotDTO>> getAvailability(
+            @RequestParam UUID subject,
+            @RequestParam String poloId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-    //     List<Booking> bookings = service.getAllBookingsPolo(poloUuid);
-
-    //         if (bookings.isEmpty()) {
-    //             return ResponseEntity.noContent().build(); // retorna 204 se não tiver reservas
-    //         }
-
-    //         List<BookingResponseDTO> dtos = bookings.stream()
-    //             .map(mapper::toDTO)
-    //             .collect(Collectors.toList());
-
-    //         return ResponseEntity.ok(dtos);
-    //     }
-
-        @GetMapping("/availability")
-        public ResponseEntity<List<AvailabilitySlotDTO>> getAvailability(
-                @RequestParam UUID subject,
-                @RequestParam String poloId,
-                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-
-            // Busca o Subject pelo ID
-            Subject subjectObj = subjectService.findById(subject)
+        // Busca o Subject pelo ID
+        Subject subjectObj = subjectService.findById(subject)
                 .orElseThrow(() -> new EntityNotFoundException("Subject não encontrado"));
 
-            List<AvailabilitySlotDTO> slots = availabilityService.getAvailability(subjectObj, poloId, date);
+        List<AvailabilitySlotDTO> slots = availabilityService.getAvailability(subjectObj, poloId, date);
 
             if (slots.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-
             return ResponseEntity.ok(slots);
         }
 }
