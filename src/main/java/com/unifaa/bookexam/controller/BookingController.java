@@ -1,7 +1,9 @@
 package com.unifaa.bookexam.controller;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,8 +23,10 @@ import com.unifaa.bookexam.model.dto.AvailabilitySlotDTO;
 import com.unifaa.bookexam.model.dto.BookingRequestDTO;
 import com.unifaa.bookexam.model.dto.BookingResponseDTO;
 import com.unifaa.bookexam.model.entity.Booking;
+import com.unifaa.bookexam.model.entity.Polo;
 import com.unifaa.bookexam.model.entity.Subject;
 import com.unifaa.bookexam.model.mappers.BookingsMappers;
+import com.unifaa.bookexam.repository.PoloRepository;
 import com.unifaa.bookexam.service.AvailabilityService;
 import com.unifaa.bookexam.service.BookingService;
 import com.unifaa.bookexam.service.SubjectService;
@@ -39,6 +43,7 @@ public class BookingController {
     private final BookingService service;
     private final AvailabilityService availabilityService;
     private final SubjectService subjectService;
+    private final PoloRepository poloRepository;
     
     @PostMapping
     //@PreAuthorize("hasRole('STUDENT')")
@@ -95,4 +100,17 @@ public class BookingController {
             }
             return ResponseEntity.ok(slots);
         }
+
+    @GetMapping("/polo-info")
+    public ResponseEntity<Map<String, Object>> getPoloInfo(@RequestParam String poloId) {
+        Polo polo = poloRepository.findById(poloId)
+                .orElseThrow(() -> new EntityNotFoundException("Polo não encontrado"));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("availability", polo.getAvailability());
+        response.put("location", polo.getLocation());
+
+        return ResponseEntity.ok(response);
+    }
+
 }
