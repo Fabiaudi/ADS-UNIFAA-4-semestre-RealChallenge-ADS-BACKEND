@@ -57,27 +57,28 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN', 'POLO')")
     public ResponseEntity<Void> deleteBooking(
             @PathVariable("id") String id,
             Authentication authentication) {
 
         String userId = authentication.getName();
-        boolean isAdminOrPolo = authentication.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ADMIN") || role.getAuthority().equals("POLO"));
 
-        service.deleteBooking(userId, isAdminOrPolo, id);
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isPolo = authentication.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_POLO"));
+
+        service.deleteBooking(userId, isAdmin, isPolo, id);
 
         return ResponseEntity.noContent().build();
-    } //preciso da parte de Autenticação para implementar esse método
-
+    } 
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@RequestParam String studentId) {
         
-        //String studentId = authentication.getName();
-
         var bookings = service.getMyBookings(studentId);
         var dtos = bookings.stream().map(mapper::toDTO).toList();
         

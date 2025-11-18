@@ -55,6 +55,9 @@ public class SecurityConfig {
                 // Só STUDENT e ADMIN podem deletar Booking
                 .requestMatchers(HttpMethod.DELETE, "/bookings/**").hasAnyRole("STUDENT", "ADMIN")
 
+                // POLO pode só ver bookings
+                .requestMatchers(HttpMethod.DELETE, "bookings/**").hasRole("POLO")
+
                 .anyRequest().authenticated()
             )
             // 🔑 Filtro JWT entra antes do UsernamePasswordAuthenticationFilter

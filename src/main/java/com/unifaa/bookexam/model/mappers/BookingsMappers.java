@@ -11,7 +11,7 @@ import com.unifaa.bookexam.model.entity.Booking;
 public interface BookingsMappers {
 
     @Mapping(source = "subjectId", target = "subject.id") 
-    @Mapping(source = "poloId", target = "polo.id") // popula booking.polo.id
+    @Mapping(source = "poloId", target = "polo.id")
     @Mapping(source = "date", target = "date")
 
     Booking toEntity(BookingRequestDTO dto);
@@ -24,7 +24,7 @@ public interface BookingsMappers {
 
     // Aqui mudamos para retornar BookingResponseDTO
     @Mapping(source = "id", target = "id")
-    @Mapping(target = "studentName", source = "student.name") // 🟢 CORRETO: nome do aluno
+    @Mapping(target = "studentName", source = "student.name")
     @Mapping(target = "subjectName", source = "subject.name")
     @Mapping(target = "poloName", source = "polo.name")
     @Mapping(source = "date", target = "date")

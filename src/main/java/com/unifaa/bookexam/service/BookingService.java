@@ -15,10 +15,12 @@ import com.unifaa.bookexam.model.entity.Booking;
 import com.unifaa.bookexam.model.entity.Polo;
 import com.unifaa.bookexam.model.entity.Student;
 import com.unifaa.bookexam.model.entity.Subject;
+import com.unifaa.bookexam.model.entity.User;
 import com.unifaa.bookexam.model.enums.BookingStatus;
 import com.unifaa.bookexam.repository.BookingRepository;
 import com.unifaa.bookexam.repository.StudentRepository;
 import com.unifaa.bookexam.repository.SubjectQueryRepository;
+import com.unifaa.bookexam.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +34,7 @@ public class BookingService {
     private final TimeSlotService timeSlotService;
     private final SubjectQueryRepository subjectRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public List<Booking> getMyBookings(String studentId) {
@@ -117,31 +120,34 @@ public class BookingService {
         }
     }
 
-    @Transactional
-    public void deleteBooking(String requesterId, boolean requesterIsAdminOrPolo, String bookingId) {
-
-        UUID bookingUuid = UUID.fromString(bookingId);
-
-        Booking booking = bookingRepository.findById(bookingUuid)
-            .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
-
-        //apenas o admin/polo pode cancelar
-        if (!requesterIsAdminOrPolo && !booking.getStudent().equals(requesterId)) {
-            throw new SecurityException("Usuário não autorizado a cancelar esse booking.");
+@Transactional
+public void deleteBooking(String requesterEmail, boolean isAdmin, boolean isPolo, String bookingId) {
+    UUID bookingUuid = UUID.fromString(bookingId);
+    
+    Booking booking = bookingRepository.findById(bookingUuid)
+        .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
+    
+        // Regra 1: Polo não pode cancelar
+        if (isPolo) {
+            throw new SecurityException("Polo não tem permissão para cancelar reservas.");
         }
-
-        // // Regra 1: Polo não pode cancelar
-        // if (isPolo) {
-        //     throw new SecurityException("Polo não tem permissão para cancelar reservas.");
-        // }
-
-        // // Regra 2: Estudante só pode cancelar sua própria reserva
-        // if (!isAdmin && !booking.getStudentId().equals(requesterId)) {
-        //     throw new SecurityException("Usuário não autorizado a cancelar essa reserva.");
-        // }
-
-        // Regra 3: Admin pode cancelar qualquer reserva
-        booking.setStatus(BookingStatus.CANCELLED);
-        bookingRepository.save(booking);
+        
+        // Regra 2: Estudante só cancela a própria reserva
+        if (!isAdmin) {
+            String studentId = booking.getStudent().getId();
+        
+        // Buscar o ID do usuário pelo email
+        User requester = userRepository.findByEmail(requesterEmail)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        String requesterId = requester.getId();
+        
+        if (!studentId.equals(requesterId)) {
+            throw new SecurityException("Usuário não autorizado a cancelar essa reserva.");
+        }
     }
+    
+    // Regra 3: Admin pode cancelar qualquer reserva
+    booking.setStatus(BookingStatus.CANCELLED);
+    bookingRepository.save(booking);
+}
 }
