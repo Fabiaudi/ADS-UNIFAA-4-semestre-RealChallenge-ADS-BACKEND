@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,7 @@ public class BookingController {
     private final PoloRepository poloRepository;
     
     @PostMapping
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<BookingResponseDTO> createBooking(@RequestBody BookingRequestDTO dto) {
 
         Booking booking = service.createBooking(dto.getStudentId(), dto);
@@ -56,14 +57,14 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_ADMIN'")
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
     public ResponseEntity<Void> deleteBooking(
             @PathVariable("id") String id,
             Authentication authentication) {
 
         String userId = authentication.getName();
         boolean isAdminOrPolo = authentication.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN") || role.getAuthority().equals("ROLE_POLO"));
+                .anyMatch(role -> role.getAuthority().equals("ADMIN") || role.getAuthority().equals("POLO"));
 
         service.deleteBooking(userId, isAdminOrPolo, id);
 
@@ -72,7 +73,7 @@ public class BookingController {
 
 
     @GetMapping("/mine")
-    //@PreAuthorize("hasRole('ROLE_STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@RequestParam String studentId) {
         
         //String studentId = authentication.getName();

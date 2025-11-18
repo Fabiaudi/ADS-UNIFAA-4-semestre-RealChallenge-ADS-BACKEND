@@ -13,9 +13,9 @@ import lombok.Setter;
 public class BookingResponseDTO {
 
     private String id;
-    private String studentId;
-    private String subjectId;
-    private String poloId;
+    private String studentName;
+    private String subjectName;
+    private String poloName;
     private LocalDate date;
     private LocalTime time;
     private BookingStatus status;

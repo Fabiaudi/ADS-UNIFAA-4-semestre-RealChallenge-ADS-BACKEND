@@ -24,10 +24,11 @@ public interface BookingsMappers {
 
     // Aqui mudamos para retornar BookingResponseDTO
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "studentId", target = "studentId")
-    @Mapping(source = "subject.id", target = "subjectId")
-    @Mapping(source = "polo.id", target = "poloId") // devolve só o ID no DTO
+    @Mapping(target = "studentName", source = "student.name") // 🟢 CORRETO: nome do aluno
+    @Mapping(target = "subjectName", source = "subject.name")
+    @Mapping(target = "poloName", source = "polo.name")
     @Mapping(source = "date", target = "date")
+    @Mapping(source = "time", target = "time")
     BookingResponseDTO toDTO(Booking booking);
 
 }

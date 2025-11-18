@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.unifaa.bookexam.model.dto.BookingRequestDTO;
 import com.unifaa.bookexam.model.entity.Booking;
 import com.unifaa.bookexam.model.entity.Polo;
+import com.unifaa.bookexam.model.entity.Student;
 import com.unifaa.bookexam.model.entity.Subject;
 import com.unifaa.bookexam.model.enums.BookingStatus;
 import com.unifaa.bookexam.repository.BookingRepository;
+import com.unifaa.bookexam.repository.StudentRepository;
 import com.unifaa.bookexam.repository.SubjectQueryRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class BookingService {
     private final PoloService poloService;
     private final TimeSlotService timeSlotService;
     private final SubjectQueryRepository subjectRepository;
+    private final StudentRepository studentRepository;
 
     @Transactional
     public List<Booking> getMyBookings(String studentId) {
@@ -94,8 +97,12 @@ public class BookingService {
         }
 
         // 8. Cria a reserva
+
+        Student student = studentRepository.findById(studentId)
+        .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado."));
+
         Booking booking = new Booking();
-        booking.setStudentId(studentId);
+        booking.setStudent(student);
         booking.setSubject(subject);
         booking.setPolo(polo);
         booking.setDate(dto.getDate());
@@ -119,7 +126,7 @@ public class BookingService {
             .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
 
         //apenas o admin/polo pode cancelar
-        if (!requesterIsAdminOrPolo && !booking.getStudentId().equals(requesterId)) {
+        if (!requesterIsAdminOrPolo && !booking.getStudent().equals(requesterId)) {
             throw new SecurityException("Usuário não autorizado a cancelar esse booking.");
         }
 

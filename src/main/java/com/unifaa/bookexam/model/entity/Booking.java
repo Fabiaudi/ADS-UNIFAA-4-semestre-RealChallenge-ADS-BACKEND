@@ -35,8 +35,9 @@ public class Booking {
     @JoinColumn(name = "polo_id", nullable = false)
     private Polo polo;
 
-    @Column(name = "student_id") // (nullable = false)
-    private String studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id") // (nullable = false)
+    private Student student;
 
     @ManyToOne
     @JoinColumn(name = "subject_id", nullable = false)
