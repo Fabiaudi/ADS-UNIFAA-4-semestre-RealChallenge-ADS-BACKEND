@@ -73,8 +73,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {
-        return pd(HttpStatus.CONFLICT, "Data integrity violation", ex.getMostSpecificCause() != null
-                ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
+        String message = ex.getMostSpecificCause() != null 
+            ? ex.getMostSpecificCause().getMessage() 
+            : ex.getMessage();
+        
+        // Detecta a constraint específica de booking duplicado
+        if (message != null && message.toLowerCase().contains("uq_booking_per_student")) {
+            return pd(HttpStatus.CONFLICT, "Booking conflict", 
+                "You already have an active booking for this schedule");
+        }
+        
+        // Outras violações de integridade (ex: FK, UK genéricas)
+        return pd(HttpStatus.CONFLICT, "Data integrity violation", message);
     }
 
     @ExceptionHandler(Exception.class)

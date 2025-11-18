@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -274,5 +275,11 @@ public class ScheduleService {
 
     // DTO de retorno do BULK (pode ser usado pelo Controller)
     public record BulkResult(UUID scheduleId, int createdCount, int skippedExistingCount, int totalSlotsForSchedule) {
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Schedule> findScheduleForSubjectAndPoloOnDate(String poloId, UUID subjectId, LocalDate date) {
+        return scheduleRepository.findByPoloIdAndSubjectIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                poloId.toString(), subjectId, date, date).stream().findFirst();
     }
 }

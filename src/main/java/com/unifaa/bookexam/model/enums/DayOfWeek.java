@@ -46,4 +46,17 @@ public enum DayOfWeek {
         }
         throw new IllegalArgumentException("Invalid day: " + value + " (expected: mon|tue|wed|thu|fri|sat)");
     }
+
+    public static DayOfWeek fromJava(java.time.DayOfWeek javaDow) {
+    return switch (javaDow) {
+        case MONDAY -> MON;
+        case TUESDAY -> TUE;
+        case WEDNESDAY -> WED;
+        case THURSDAY -> THU;
+        case FRIDAY -> FRI;
+        case SATURDAY -> SAT;
+        case SUNDAY -> throw new IllegalArgumentException("Domingo não permitido"); 
+    };
+}
+
 }

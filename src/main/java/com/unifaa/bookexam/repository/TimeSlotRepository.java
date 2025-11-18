@@ -1,5 +1,6 @@
 package com.unifaa.bookexam.repository;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,6 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, UUID> {
 
     List<TimeSlot> findBySchedule_IdAndDayOrderByTimeInterval_StartTime(UUID scheduleId, DayOfWeek day);
 
+    boolean existsBySchedule_IdAndDayAndTimeInterval_StartTime(UUID scheduleId, com.unifaa.bookexam.model.enums.DayOfWeek day,
+            LocalTime startTime);
 }
