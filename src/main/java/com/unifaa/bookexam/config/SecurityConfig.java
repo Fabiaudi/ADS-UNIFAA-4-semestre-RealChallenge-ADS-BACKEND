@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,23 +19,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.unifaa.bookexam.util.JwtUtil;
-
-/**
- * Configuração central do Spring Security.
- * Nesta fase:
- *  - /api/auth/** está liberado.
- *  - Demais rotas podem ficar .permitAll() durante o dev (ou .authenticated() quando a Laís ligar roles/JWT).
- *  - Sessão stateless e filtro JWT acoplado (só efetivo quando você enviar Authorization: Bearer ...).
- */
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    // ✅ injeção via construtor
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -45,12 +38,20 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/api/health", "/api/auth/**").permitAll()
-                // Durante o desenvolvimento, você pode deixar tudo liberado:
-                .anyRequest().permitAll()
-                // Quando a Laís ativar JWT/RBAC de verdade, troque para:
-                // .anyRequest().authenticated()
+
+                // Só ADMIN e POLO podem ver schedules
+                .requestMatchers(HttpMethod.GET, "/api/schedules/**")
+                    .hasAnyRole("ADMIN", "POLO")
+
+                // Só ADMIN pode criar/alterar/excluir schedule
+                .requestMatchers(HttpMethod.POST, "/api/schedules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/schedules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/schedules/**").hasRole("ADMIN")
+
+                .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            // 🔑 Filtro JWT entra antes do UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -60,7 +61,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Mantemos para quando a Laís for ativar AuthenticationManager/DaoAuthProvider
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
@@ -69,17 +69,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource configurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("*")); // em prod: liste domínios confiáveis
+        cfg.setAllowedOrigins(List.of("*")); // em prod: configure domínios reais
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
         cfg.setExposedHeaders(List.of("Authorization", "Content-Type"));
         cfg.setAllowCredentials(false);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
 
-    // Alias para evitar erro de método ausente (nome mais claro)
     private CorsConfigurationSource corsConfiguration() {
         return configurationSource();
     }
