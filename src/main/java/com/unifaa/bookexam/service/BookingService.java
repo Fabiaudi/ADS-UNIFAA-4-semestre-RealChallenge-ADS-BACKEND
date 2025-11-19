@@ -148,6 +148,6 @@ public void deleteBooking(String requesterEmail, boolean isAdmin, boolean isPolo
     
     // Regra 3: Admin pode cancelar qualquer reserva
     booking.setStatus(BookingStatus.CANCELLED);
-    bookingRepository.save(booking);
-}
+    bookingRepository.delete(booking);
+    }
 }
