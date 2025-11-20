@@ -36,4 +36,9 @@ public class AuthResponse {
      * O tipo (role) do usuário (ADMIN, STUDENT, POLO).
      */
     private String type;
+
+    /**
+     * O ID do polo associado ao usuário (se aplicável).
+     */
+    private String poloId;
 }
