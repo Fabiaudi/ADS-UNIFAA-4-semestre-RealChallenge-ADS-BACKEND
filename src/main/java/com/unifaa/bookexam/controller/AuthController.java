@@ -2,13 +2,15 @@ package com.unifaa.bookexam.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.unifaa.bookexam.model.dto.AuthResponse;
-import com.unifaa.bookexam.model.dto.LoginRequest;
+// import org.springframework.web.bind.annotation.PostMapping;
+// import org.springframework.web.bind.annotation.RequestBody;
+// import org.springframework.web.bind.annotation.RequestMapping;
+// import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+// import com.unifaa.bookexam.model.dto.AuthResponse;
+// import com.unifaa.bookexam.model.dto.LoginRequest;
+import com.unifaa.bookexam.model.dto.*;
+import com.unifaa.bookexam.model.entity.Student;
 import com.unifaa.bookexam.repository.UserRepository;
 import com.unifaa.bookexam.util.JwtUtil;
 
@@ -50,7 +52,13 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getType());
-        var resp = new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getType());
+
+        String poloId = null;
+        if (user instanceof Student student && student.getStudentPolo() != null) {
+            poloId = student.getStudentPolo().getId();
+        }
+
+        var resp = new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getType(), poloId);
         return ResponseEntity.ok(resp);
     }
 }
