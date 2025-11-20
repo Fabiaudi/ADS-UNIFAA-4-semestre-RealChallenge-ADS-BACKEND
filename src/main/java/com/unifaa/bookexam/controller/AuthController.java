@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.unifaa.bookexam.model.dto.AuthResponse;
 import com.unifaa.bookexam.model.dto.LoginRequest;
+import com.unifaa.bookexam.model.entity.Student;
 import com.unifaa.bookexam.repository.UserRepository;
 import com.unifaa.bookexam.util.JwtUtil;
 
@@ -50,6 +51,13 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getType());
+
+        String poloId = null;
+        // Verifica se o usuário é um Aluno e se tem um polo vinculado
+        if (user instanceof Student student && student.getStudentPolo() != null) {
+            poloId = student.getStudentPolo().getId();
+        }
+
         var resp = new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getType());
         return ResponseEntity.ok(resp);
     }
