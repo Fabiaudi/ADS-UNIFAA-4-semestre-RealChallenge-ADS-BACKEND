@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                 // Só ADMIN e POLO podem ver schedules
                 .requestMatchers(HttpMethod.GET, "/api/schedules/**")
-                    .hasAnyRole("ADMIN", "POLO")
+                    .hasAnyRole("ADMIN", "POLO", "STUDENT")
 
                 // Só ADMIN pode criar/alterar/excluir schedule
                 .requestMatchers(HttpMethod.POST, "/api/schedules/**").hasRole("ADMIN")
