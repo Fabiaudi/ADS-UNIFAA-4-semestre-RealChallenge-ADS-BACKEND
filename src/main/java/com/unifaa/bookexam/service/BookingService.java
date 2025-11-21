@@ -38,7 +38,7 @@ public class BookingService {
 
     @Transactional
     public List<Booking> getMyBookings(String studentId) {
-    return bookingRepository.findByStudentId(studentId);
+        return bookingRepository.findByStudentId(studentId);
     }
 
     @Transactional
@@ -51,38 +51,39 @@ public class BookingService {
 
         // 2. Buscar a entidade Subject completa
         Subject subject = subjectRepository.findById(subjectUuid)
-        .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
+                .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
 
         // 3. Buscar Polo completo
         Polo polo = poloService.findById(poloId)
-            .orElseThrow(() -> new IllegalArgumentException("Polo não encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("Polo não encontrado."));
 
         // 4. Buscar schedule
         var schedule = scheduleService.findScheduleForSubjectAndPoloOnDate(poloId, subjectUuid, dto.getDate())
-            .orElseThrow(() -> new IllegalArgumentException("Nenhum schedule encontrado para essa disciplina/polo na data informada."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Nenhum schedule encontrado para essa disciplina/polo na data informada."));
         UUID scheduleId = schedule.getId();
 
-
         // 5. Verifica se o time slot existe para aquele schedule+dia/hora
-        com.unifaa.bookexam.model.enums.DayOfWeek dow = com.unifaa.bookexam.model.enums.DayOfWeek.fromJava(date.getDayOfWeek());
+        com.unifaa.bookexam.model.enums.DayOfWeek dow = com.unifaa.bookexam.model.enums.DayOfWeek
+                .fromJava(date.getDayOfWeek());
         LocalTime requestedTime = dto.getTime();
 
         boolean timeSlotExists = timeSlotService.existsByScheduleAndDayAndStartTime(
-            scheduleId,
-            dow,
-            requestedTime
-            );
+                scheduleId,
+                dow,
+                requestedTime);
 
         if (!timeSlotExists) {
             throw new IllegalArgumentException("Dia/hora não disponível para esse schedule.");
         }
 
-        // 6. Verifica a reserva única por aluno
-        Optional<Booking> existing = bookingRepository.findByStudentIdAndSubjectAndPoloAndDateAndTime(studentId, subject, polo, dto.getDate(), dto.getTime());
-       
+        /// 6. Verifica se o aluno já possui prova agendada para essa disciplina
+        boolean alreadyBooked = bookingRepository.existsByStudentIdAndSubject(studentId, subject);
+        Optional<Booking> existing = bookingRepository.findByStudentIdAndSubjectAndPoloAndDateAndTime(
+                studentId, subject, polo, dto.getDate(), dto.getTime());
 
-        if (existing.isPresent()) {
-            throw new IllegalStateException("Aluno já possui booking para essa combinação.");
+        if (alreadyBooked || existing.isPresent()) {
+            throw new IllegalStateException("Você já possui uma prova agendada para esta disciplina.");
         }
 
         // 7. Verifica capacidade
@@ -92,8 +93,7 @@ public class BookingService {
                 polo,
                 subject,
                 dto.getDate(),
-                dto.getTime()
-        );
+                dto.getTime());
 
         if (booked >= capacity) {
             throw new IllegalStateException("Horário já lotado.");
@@ -102,7 +102,7 @@ public class BookingService {
         // 8. Cria a reserva
 
         Student student = studentRepository.findById(studentId)
-        .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado."));
 
         Booking booking = new Booking();
         booking.setStudent(student);
@@ -120,34 +120,34 @@ public class BookingService {
         }
     }
 
-@Transactional
-public void deleteBooking(String requesterEmail, boolean isAdmin, boolean isPolo, String bookingId) {
-    UUID bookingUuid = UUID.fromString(bookingId);
-    
-    Booking booking = bookingRepository.findById(bookingUuid)
-        .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
-    
+    @Transactional
+    public void deleteBooking(String requesterEmail, boolean isAdmin, boolean isPolo, String bookingId) {
+        UUID bookingUuid = UUID.fromString(bookingId);
+
+        Booking booking = bookingRepository.findById(bookingUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Booking não encontrado."));
+
         // Regra 1: Polo não pode cancelar
         if (isPolo) {
             throw new SecurityException("Polo não tem permissão para cancelar reservas.");
         }
-        
+
         // Regra 2: Estudante só cancela a própria reserva
         if (!isAdmin) {
             String studentId = booking.getStudent().getId();
-        
-        // Buscar o ID do usuário pelo email
-        User requester = userRepository.findByEmail(requesterEmail)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        String requesterId = requester.getId();
-        
-        if (!studentId.equals(requesterId)) {
-            throw new SecurityException("Usuário não autorizado a cancelar essa reserva.");
+
+            // Buscar o ID do usuário pelo email
+            User requester = userRepository.findByEmail(requesterEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            String requesterId = requester.getId();
+
+            if (!studentId.equals(requesterId)) {
+                throw new SecurityException("Usuário não autorizado a cancelar essa reserva.");
+            }
         }
-    }
-    
-    // Regra 3: Admin pode cancelar qualquer reserva
-    booking.setStatus(BookingStatus.CANCELLED);
-    bookingRepository.delete(booking);
+
+        // Regra 3: Admin pode cancelar qualquer reserva
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.delete(booking);
     }
 }

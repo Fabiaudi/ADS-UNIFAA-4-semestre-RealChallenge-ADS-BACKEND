@@ -14,22 +14,25 @@ import com.unifaa.bookexam.model.entity.Polo;
 import com.unifaa.bookexam.model.entity.Subject;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, UUID>{
+public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     List<Booking> findByStudentId(String studentId);
-         
+
     long countByPoloAndSubjectAndDateAndTime(
-        Polo polo,
-        Subject subject,
-        LocalDate date,
-        LocalTime time
-    );
+            Polo polo,
+            Subject subject,
+            LocalDate date,
+            LocalTime time);
 
     Optional<Booking> findByStudentIdAndSubjectAndPoloAndDateAndTime(
-        String studentId,
-        Subject subject,
-        Polo polo,
-        LocalDate date,
-        LocalTime time
-    );
+            String studentId,
+            Subject subject,
+            Polo polo,
+            LocalDate date,
+            LocalTime time);
+
+    boolean existsByStudentIdAndSubject(
+            String studentId,
+            Subject subject);
+
 }
