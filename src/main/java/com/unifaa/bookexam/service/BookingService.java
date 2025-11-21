@@ -41,6 +41,27 @@ public class BookingService {
         return bookingRepository.findByStudentId(studentId);
     }
 
+        @Transactional(readOnly = true)
+    public List<Booking> getBookingsForPolo(String requesterEmail, LocalDate date) {
+
+        // Busca o usuário pelo e-mail vindo do token
+        User requester = userRepository.findByEmail(requesterEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        // Garante que é um usuário do tipo POLO
+        if (!(requester instanceof Polo)) {
+            throw new SecurityException("Apenas usuários do tipo POLO podem acessar essa informação.");
+        }
+
+        Polo polo = (Polo) requester;
+
+        // Se a data vier nula, usa a data de hoje
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+
+        // Busca os agendamentos desse polo nesta data, ordenados por horário
+        return bookingRepository.findByPoloAndDateOrderByTime(polo, targetDate);
+    }
+
     @Transactional
     public Booking createBooking(String studentId, BookingRequestDTO dto) {
 

@@ -35,4 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             String studentId,
             Subject subject);
 
+    // Lista agendamentos de um polo em uma data específica, ordenados por horário
+    List<Booking> findByPoloAndDateOrderByTime(Polo polo, LocalDate date);
+
 }

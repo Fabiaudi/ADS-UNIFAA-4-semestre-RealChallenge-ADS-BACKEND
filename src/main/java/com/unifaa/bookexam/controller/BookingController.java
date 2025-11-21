@@ -45,7 +45,7 @@ public class BookingController {
     private final AvailabilityService availabilityService;
     private final SubjectService subjectService;
     private final PoloRepository poloRepository;
-    
+
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<BookingResponseDTO> createBooking(@RequestBody BookingRequestDTO dto) {
@@ -73,15 +73,15 @@ public class BookingController {
         service.deleteBooking(userId, isAdmin, isPolo, id);
 
         return ResponseEntity.noContent().build();
-    } 
+    }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@RequestParam String studentId) {
-        
+
         var bookings = service.getMyBookings(studentId);
         var dtos = bookings.stream().map(mapper::toDTO).toList();
-        
+
         return ResponseEntity.ok(dtos);
     }
 
@@ -97,11 +97,28 @@ public class BookingController {
 
         List<AvailabilitySlotDTO> slots = availabilityService.getAvailability(subjectObj, poloId, date);
 
-            if (slots.isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(slots);
+        if (slots.isEmpty()) {
+            return ResponseEntity.noContent().build();
         }
+        return ResponseEntity.ok(slots);
+    }
+
+    @GetMapping("/polo")
+    @PreAuthorize("hasRole('POLO')")
+    public ResponseEntity<List<BookingResponseDTO>> getBookingsForPolo(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Authentication authentication) {
+
+        String requesterEmail = authentication.getName();
+
+        List<Booking> bookings = service.getBookingsForPolo(requesterEmail, date);
+
+        List<BookingResponseDTO> dtos = bookings.stream()
+                .map(mapper::toDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
 
     @GetMapping("/polo-info")
     public ResponseEntity<Map<String, Object>> getPoloInfo(@RequestParam String poloId) {
