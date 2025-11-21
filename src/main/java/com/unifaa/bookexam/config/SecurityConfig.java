@@ -49,14 +49,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/schedules/**").hasRole("ADMIN")
 
                 // Só STUDENT pode criar e ver Booking
-                .requestMatchers(HttpMethod.POST, "/bookings**").hasRole("STUDENT")
+                .requestMatchers(HttpMethod.POST, "/bookings").hasRole("STUDENT")
                 .requestMatchers(HttpMethod.GET, "/bookings/mine**").hasRole("STUDENT")
+
                 
                 // Só STUDENT e ADMIN podem deletar Booking
                 .requestMatchers(HttpMethod.DELETE, "/bookings/**").hasAnyRole("STUDENT", "ADMIN")
 
-                // POLO pode só ver bookings
-                .requestMatchers(HttpMethod.DELETE, "bookings/**").hasRole("POLO")
+                // POLO pode apenas ver bookings
+                .requestMatchers(HttpMethod.GET, "/bookings/**").hasRole("POLO")
+
 
                 .anyRequest().authenticated()
             )

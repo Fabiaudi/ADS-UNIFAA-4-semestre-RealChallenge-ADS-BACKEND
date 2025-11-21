@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.unifaa.bookexam.exception.error.BadRequestException;
 import com.unifaa.bookexam.exception.error.NotFoundException;
+import com.unifaa.bookexam.model.dto.CustomDaySlotRequest;
 import com.unifaa.bookexam.model.dto.ScheduleCreateDTO;
 import com.unifaa.bookexam.model.dto.ScheduleResponseDTO;
 import com.unifaa.bookexam.model.dto.TimeSlotResponseDTO;
@@ -157,6 +158,64 @@ public class ScheduleService {
             slot.setTimeInterval(interval);
             timeSlotRepository.save(slot);
             created++;
+        }
+
+        int totalNow = timeSlotRepository.countBySchedule_Id(schedule.getId());
+        return new BulkResult(schedule.getId(), created, skipped, totalNow);
+    }
+
+    @Transactional
+    public BulkResult generateCustomTimeSlots(UUID scheduleId, List<CustomDaySlotRequest> config) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("Schedule não encontrado: " + scheduleId));
+
+        validateDates(schedule.getStartDate(), schedule.getEndDate());
+
+        int created = 0;
+        int skipped = 0;
+
+        for (CustomDaySlotRequest item : config) {
+
+            if (item.day() == null || item.start() == null || item.end() == null) {
+                continue;
+            }
+
+            DayOfWeek day;
+            try {
+                day = DayOfWeek.from(item.day()); // "mon".."sat"
+            } catch (IllegalArgumentException ex) {
+                continue;
+            }
+
+            LocalTime start = LocalTime.parse(item.start()); // "14:00"
+            LocalTime end = LocalTime.parse(item.end()); // "19:00"
+
+            if (!start.isBefore(end)) {
+                continue;
+            }
+
+            // monta intervalos de 60min dentro do range
+            List<TimeInterval> intervals = buildIntervals(start, end, 60);
+
+            for (TimeInterval ti : intervals) {
+                TimeInterval interval = upsertInterval(ti.getStartTime(), ti.getEndTime());
+
+                boolean exists = timeSlotRepository.existsBySchedule_IdAndDayAndTimeInterval_Id(
+                        schedule.getId(), day, interval.getId());
+
+                if (exists) {
+                    skipped++;
+                    continue;
+                }
+
+                TimeSlot slot = new TimeSlot();
+                slot.setSchedule(schedule);
+                slot.setDay(day);
+                slot.setTimeInterval(interval);
+
+                timeSlotRepository.save(slot);
+                created++;
+            }
         }
 
         int totalNow = timeSlotRepository.countBySchedule_Id(schedule.getId());

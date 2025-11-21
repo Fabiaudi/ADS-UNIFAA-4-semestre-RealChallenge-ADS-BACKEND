@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unifaa.bookexam.model.dto.CustomDaySlotRequest;
+
 // import org.springframework.security.access.prepost.PreAuthorize; // [Laís] Descomentar quando ligar roles
 
 import com.unifaa.bookexam.model.dto.ScheduleCreateDTO;
@@ -63,6 +65,15 @@ public class ScheduleController {
     @PostMapping("/{id}/timeslots/bulk")
     public ResponseEntity<BulkResult> generateBulk(@PathVariable("id") UUID scheduleId) {
         BulkResult result = scheduleService.generateDefaultTimeSlots(scheduleId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    @PostMapping("/{id}/timeslots/custom")
+    public ResponseEntity<BulkResult> generateCustom(
+            @PathVariable("id") UUID scheduleId,
+            @RequestBody List<CustomDaySlotRequest> config) {
+
+        BulkResult result = scheduleService.generateCustomTimeSlots(scheduleId, config);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
