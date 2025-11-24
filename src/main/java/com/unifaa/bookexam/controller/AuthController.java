@@ -2,26 +2,20 @@ package com.unifaa.bookexam.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-// import org.springframework.web.bind.annotation.PostMapping;
-// import org.springframework.web.bind.annotation.RequestBody;
-// import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-// import com.unifaa.bookexam.model.dto.AuthResponse;
-// import com.unifaa.bookexam.model.dto.LoginRequest;
 import com.unifaa.bookexam.model.dto.*;
 import com.unifaa.bookexam.model.entity.Student;
+import com.unifaa.bookexam.model.entity.User;
 import com.unifaa.bookexam.repository.UserRepository;
 import com.unifaa.bookexam.util.JwtUtil;
 
+import java.util.Optional;
+
 /**
  * Endpoint de autenticação (login) — fluxo simplificado:
- *  - Busca usuário por email
+ *  - Busca usuário por email e por matrícula
  *  - Valida senha via PasswordEncoder.matches(raw, hash)
  *  - Gera JWT com claim 'role'
- *
- * Quando a Laís finalizar o UserDetailsService/AuthenticationProvider,
- * podemos voltar a usar AuthenticationManager.authenticate(...).
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -37,11 +31,31 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Tenta buscar o usuário primeiro pelo email. Se não encontrar,
+     * tenta buscar pelo ID (matrícula). A credencial de login (email ou ID)
+     * é esperada no campo 'email' do LoginRequest.
+     */
+    private Optional<User> findUserByEmailOrId(String credential) {
+        // Tenta buscar por email (único)
+        Optional<User> userOpt = userRepository.findByEmail(credential);
+        
+        if (userOpt.isPresent()) {
+            return userOpt;
+        }
+
+        // Se não for email, tenta buscar por ID (matrícula, que também é única)
+        // Isso cobre logins com IDs como A00001, P00001, E00001
+        return userRepository.findById(credential);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        System.out.printf("[AUTH] Tentativa de login email=%s%n", req.getEmail());
+        System.out.printf("[AUTH] Tentativa de login credencial=%s%n", req.getEmail());
 
-        var userOpt = userRepository.findByEmail(req.getEmail());
+        // Altera a busca para aceitar email OU ID (matrícula)
+        var userOpt = findUserByEmailOrId(req.getEmail());
+        
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
@@ -51,6 +65,8 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
 
+        // O token JWT sempre será gerado usando o EMAIL como Subject, 
+        // mas a busca de credencial aceita ID.
         String token = jwtUtil.generateToken(user.getEmail(), user.getType());
 
         String poloId = null;
